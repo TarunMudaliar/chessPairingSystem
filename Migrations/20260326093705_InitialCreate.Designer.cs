@@ -12,8 +12,8 @@ using chessPairingSystem.Areas.Identity.Data;
 namespace chessPairingSystem.Migrations
 {
     [DbContext(typeof(chessPairingSystemContext))]
-    [Migration("20260326092830_AddRemainingTables")]
-    partial class AddRemainingTables
+    [Migration("20260326093705_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -461,13 +461,13 @@ namespace chessPairingSystem.Migrations
                     b.HasOne("chessPairingSystem.Areas.Identity.Data.ApplicationUser", "BlackPlayer")
                         .WithMany()
                         .HasForeignKey("BlackPlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("chessPairingSystem.Areas.Identity.Data.ApplicationUser", "WhitePlayer")
                         .WithMany()
                         .HasForeignKey("WhitePlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("BlackPlayer");

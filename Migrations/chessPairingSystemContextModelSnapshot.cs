@@ -458,13 +458,13 @@ namespace chessPairingSystem.Migrations
                     b.HasOne("chessPairingSystem.Areas.Identity.Data.ApplicationUser", "BlackPlayer")
                         .WithMany()
                         .HasForeignKey("BlackPlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("chessPairingSystem.Areas.Identity.Data.ApplicationUser", "WhitePlayer")
                         .WithMany()
                         .HasForeignKey("WhitePlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("BlackPlayer");
