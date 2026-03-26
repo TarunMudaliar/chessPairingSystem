@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using chessPairingSystem.Areas.Identity.Data;
 using chessPairingSystem.Models;
+
 namespace chessPairingSystem
 {
     public class Program
@@ -13,7 +14,7 @@ namespace chessPairingSystem
 
             builder.Services.AddDbContext<chessPairingSystemContext>(options => options.UseSqlServer(connectionString));
 
-            builder.Services.AddDefaultIdentity<Account>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<chessPairingSystemContext>();
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<chessPairingSystemContext>();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();

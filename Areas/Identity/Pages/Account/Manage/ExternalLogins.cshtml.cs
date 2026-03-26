@@ -17,14 +17,14 @@ namespace chessPairingSystem.Areas.Identity.Pages.Account.Manage
 {
     public class ExternalLoginsModel : PageModel
     {
-        private readonly UserManager<Account> _userManager;
-        private readonly SignInManager<Account> _signInManager;
-        private readonly IUserStore<Account> _userStore;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUserStore<ApplicationUser> _userStore;
 
         public ExternalLoginsModel(
-            UserManager<Account> userManager,
-            SignInManager<Account> signInManager,
-            IUserStore<Account> userStore)
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IUserStore<ApplicationUser> userStore)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -70,7 +70,7 @@ namespace chessPairingSystem.Areas.Identity.Pages.Account.Manage
                 .ToList();
 
             string passwordHash = null;
-            if (_userStore is IUserPasswordStore<Account> userPasswordStore)
+            if (_userStore is IUserPasswordStore<ApplicationUser> userPasswordStore)
             {
                 passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted);
             }

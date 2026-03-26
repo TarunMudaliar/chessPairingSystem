@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using chessPairingSystem.Areas.Identity.Data;
 
 namespace chessPairingSystem.Models
 {
@@ -27,6 +28,6 @@ namespace chessPairingSystem.Models
 
         // Navigation property to access player details
         [ForeignKey("PlayerId")]
-        public Account? Player { get; set; }
+        public ApplicationUser? Player { get; set; }
     }
 }

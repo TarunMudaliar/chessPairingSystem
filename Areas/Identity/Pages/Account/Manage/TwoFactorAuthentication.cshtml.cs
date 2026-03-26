@@ -14,12 +14,12 @@ namespace chessPairingSystem.Areas.Identity.Pages.Account.Manage
 {
     public class TwoFactorAuthenticationModel : PageModel
     {
-        private readonly UserManager<Account> _userManager;
-        private readonly SignInManager<Account> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<TwoFactorAuthenticationModel> _logger;
 
         public TwoFactorAuthenticationModel(
-            UserManager<Account> userManager, SignInManager<Account> signInManager, ILogger<TwoFactorAuthenticationModel> logger)
+            UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<TwoFactorAuthenticationModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;

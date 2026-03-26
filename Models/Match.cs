@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using chessPairingSystem.Areas.Identity.Data;
 
 namespace chessPairingSystem.Models
 {
@@ -42,11 +43,11 @@ namespace chessPairingSystem.Models
 
         // Navigation property for white player
         [ForeignKey("WhitePlayerId")]
-        public Account? WhitePlayer { get; set; }
+        public ApplicationUser? WhitePlayer { get; set; }
 
         // Navigation property for black player
         [ForeignKey("BlackPlayerId")]
-        public Account? BlackPlayer { get; set; }
+        public ApplicationUser? BlackPlayer { get; set; }
 
         // Navigation property for appeals linked to this match
         public ICollection<Appeal>? Appeals { get; set; }

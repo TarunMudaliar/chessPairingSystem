@@ -1,11 +1,12 @@
 ﻿using chessPairingSystem.Models;
+using chessPairingSystem.Areas.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace chessPairingSystem.Areas.Identity.Data;
 
-public class chessPairingSystemContext : IdentityDbContext<Account>
+public class chessPairingSystemContext : IdentityDbContext<ApplicationUser>
 {
     public chessPairingSystemContext(DbContextOptions<chessPairingSystemContext> options)
         : base(options)

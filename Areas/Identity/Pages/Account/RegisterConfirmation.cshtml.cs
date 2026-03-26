@@ -18,10 +18,10 @@ namespace chessPairingSystem.Areas.Identity.Pages.Account
     [AllowAnonymous]
     public class RegisterConfirmationModel : PageModel
     {
-        private readonly UserManager<Account> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<Account> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<ApplicationUser> userManager, IEmailSender sender)
         {
             _userManager = userManager;
             _sender = sender;
