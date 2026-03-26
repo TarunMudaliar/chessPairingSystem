@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using chessPairingSystem.Areas.Identity.Data;
 
@@ -11,9 +12,11 @@ using chessPairingSystem.Areas.Identity.Data;
 namespace chessPairingSystem.Migrations
 {
     [DbContext(typeof(chessPairingSystemContext))]
-    partial class chessPairingSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20260326092830_AddRemainingTables")]
+    partial class AddRemainingTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
