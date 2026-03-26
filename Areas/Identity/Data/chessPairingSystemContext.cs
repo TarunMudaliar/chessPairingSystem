@@ -1,4 +1,4 @@
-﻿using chessPairingSystem.Areas.Identity.Data;
+﻿using chessPairingSystem.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using chessPairingSystem.Areas.Identity.Data;
+using chessPairingSystem.Models;
 namespace chessPairingSystem
 {
     public class Program
