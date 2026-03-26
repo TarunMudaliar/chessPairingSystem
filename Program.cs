@@ -12,7 +12,7 @@ namespace chessPairingSystem
 
             builder.Services.AddDbContext<chessPairingSystemContext>(options => options.UseSqlServer(connectionString));
 
-            builder.Services.AddDefaultIdentity<Account>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<chessPairingSystemContext>();
+            builder.Services.AddDefaultIdentity<Account>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<chessPairingSystemContext>();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
@@ -37,7 +37,7 @@ namespace chessPairingSystem
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
                 .WithStaticAssets();
-
+            app.MapRazorPages();
             app.Run();
         }
     }
