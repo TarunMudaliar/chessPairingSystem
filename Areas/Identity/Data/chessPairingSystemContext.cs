@@ -26,4 +26,6 @@ public DbSet<chessPairingSystem.Models.Category> Category { get; set; } = defaul
 public DbSet<chessPairingSystem.Models.Match> Match { get; set; } = default!;
 
 public DbSet<chessPairingSystem.Models.MatchQueue> MatchQueue { get; set; } = default!;
+
+public DbSet<chessPairingSystem.Models.Appeal> Appeal { get; set; } = default!;
 }
