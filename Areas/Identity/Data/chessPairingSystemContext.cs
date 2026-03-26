@@ -22,4 +22,6 @@ public class chessPairingSystemContext : IdentityDbContext<ApplicationUser>
     }
 
 public DbSet<chessPairingSystem.Models.Category> Category { get; set; } = default!;
+
+public DbSet<chessPairingSystem.Models.Match> Match { get; set; } = default!;
 }
