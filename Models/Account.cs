@@ -1,13 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace chessPairingSystem.Models;
-
-// Add profile data for application users by adding properties to the Account class
-public class Account : IdentityUser
+namespace chessPairingSystem.Models
 {
-}
+    public class Account : IdentityUser
+    {
+        // Player's display name - max 50 characters
+        [StringLength(50)]
+        public string? PlayerName { get; set; }
 
+        // Foreign key linking player to their category (year level)
+        public int CategoryId { get; set; }
+
+        // Player's current rating - adjusted after each game
+        public int Ratings { get; set; }
+
+        // Navigation property to access full Category details
+        [ForeignKey("CategoryId")]
+        public Category? Category { get; set; }
+    }
+}
