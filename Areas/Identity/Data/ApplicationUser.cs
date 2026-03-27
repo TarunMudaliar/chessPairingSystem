@@ -14,7 +14,7 @@ namespace chessPairingSystem.Areas.Identity.Data
 
         // Foreign key linking player to their category e.g. Year 9, Year 10
         [Display(Name = "Category")]
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
 
         // Player's current rating - automatically adjusted after each game
         public int Ratings { get; set; }
