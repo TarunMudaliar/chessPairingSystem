@@ -19,18 +19,21 @@ namespace chessPairingSystem.Models
 
         // Result entered by white player - W, L or D
         [StringLength(10)]
+        [Display(Name = "White Result")]
         public string? WhiteResult { get; set; }
 
         // Result entered by black player - W, L or D
         [StringLength(10)]
+        [Display(Name = "Black Result")]
         public string? BlackResult { get; set; }
 
-        // Match status - e.g. Pending, Completed
+        // Match status - Pending, Completed or Disputed
         [StringLength(10)]
         public string? Status { get; set; }
 
-        // Date and time the match was created
+        // Date and time the match was created 
         [Required]
+        [Display(Name = "Match Date")]
         public DateTime MatchDate { get; set; }
 
         // Location where the game will be played e.g. Chess Club
@@ -39,6 +42,7 @@ namespace chessPairingSystem.Models
 
         // Scheduled time for the game e.g. Lunchtime
         [StringLength(20)]
+        [Display(Name = "Scheduled Time")]
         public string? ScheduledTime { get; set; }
 
         // Navigation property for white player
