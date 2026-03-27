@@ -18,7 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Identity\Data\SQL\" />
+    <Folder Include="Areas\Identity\Data\SQL\Complex\" />
+    <Folder Include="Areas\Identity\Data\SQL\Advanced\" />
+    <Folder Include="Areas\Identity\Data\SQL\Simple\" />
   </ItemGroup>
 
 </Project>
