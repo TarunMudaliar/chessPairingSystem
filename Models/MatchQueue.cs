@@ -12,10 +12,12 @@ namespace chessPairingSystem.Models
 
         // Foreign key linking to the player waiting in queue
         [Required]
+        [Display(Name = "Player")]
         public string PlayerId { get; set; }
 
         // Date and time the player joined the queue
         [Required]
+        [Display(Name = "Time Joined")]
         public DateTime TimeJoined { get; set; }
 
         // Location where the player wants to play e.g. Chess Club
@@ -24,6 +26,7 @@ namespace chessPairingSystem.Models
 
         // Scheduled time the player wants to play e.g. Lunchtime
         [StringLength(20)]
+        [Display(Name = "Scheduled Time")]
         public string? ScheduledTime { get; set; }
 
         // Navigation property to access player details
