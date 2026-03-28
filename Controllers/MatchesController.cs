@@ -20,10 +20,24 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: Matches
-        public async Task<IActionResult> Index()
+        // LINQ : Search matches by player name
+        public async Task<IActionResult> Index(string searchString)
         {
-            var chessPairingSystemContext = _context.Match.Include(m => m.BlackPlayer).Include(m => m.WhitePlayer);
-            return View(await chessPairingSystemContext.ToListAsync());
+            // LINQ : Get all matches from database
+            var matches = from m in _context.Match
+                          select m;
+
+            // LINQ : Filter matches by player username if search string is provided
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                matches = matches.Where(m => m.WhitePlayer.UserName.Contains(searchString)
+                                       || m.BlackPlayer.UserName.Contains(searchString));
+            }
+
+            // LINQ : Include related player data and return to view
+            return View(await matches.Include(m => m.WhitePlayer)
+                                     .Include(m => m.BlackPlayer)
+                                     .ToListAsync());
         }
 
         // GET: Matches/Details/5
@@ -55,8 +69,6 @@ namespace chessPairingSystem.Controllers
         }
 
         // POST: Matches/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("GameId,WhitePlayerId,BlackPlayerId,WhiteResult,BlackResult,Status,MatchDate,Location,ScheduledTime")] Match match)
@@ -91,8 +103,6 @@ namespace chessPairingSystem.Controllers
         }
 
         // POST: Matches/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("GameId,WhitePlayerId,BlackPlayerId,WhiteResult,BlackResult,Status,MatchDate,Location,ScheduledTime")] Match match)
