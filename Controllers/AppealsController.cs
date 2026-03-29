@@ -20,10 +20,23 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: Appeals
-        public async Task<IActionResult> Index()
+        // LINQ - Search appeals by status
+        public async Task<IActionResult> Index(string searchString)
         {
-            var chessPairingSystemContext = _context.Appeal.Include(a => a.Match).Include(a => a.Player);
-            return View(await chessPairingSystemContext.ToListAsync());
+            // LINQ - Get all appeals from database
+            var appeals = from a in _context.Appeal
+                          select a;
+
+            // LINQ - Filter appeals by status if search string is provided
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                appeals = appeals.Where(a => a.Status.Contains(searchString));
+            }
+
+            // LINQ - Include related match and player data and return to view
+            return View(await appeals.Include(a => a.Match)
+                                     .Include(a => a.Player)
+                                     .ToListAsync());
         }
 
         // GET: Appeals/Details/5
@@ -55,8 +68,6 @@ namespace chessPairingSystem.Controllers
         }
 
         // POST: Appeals/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AppealId,GameId,PlayerId,Message,Status,SubmittedAt,AdminResponse")] Appeal appeal)
@@ -91,8 +102,6 @@ namespace chessPairingSystem.Controllers
         }
 
         // POST: Appeals/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("AppealId,GameId,PlayerId,Message,Status,SubmittedAt,AdminResponse")] Appeal appeal)
