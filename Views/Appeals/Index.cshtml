@@ -1,14 +1,27 @@
 ﻿@model IEnumerable<chessPairingSystem.Models.Appeal>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Appeals";
 }
 
-<h1>Index</h1>
+<h1>Appeals</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+@* Search form - filter appeals by status *@
+<form asp-action="Index" method="get">
+    <div class="form-group">
+        <label>Search by Status:</label>
+        <input type="text" name="searchString" value="@ViewData["CurrentSearch"]" class="form-control" style="width:300px; display:inline;" placeholder="e.g. Pending, Resolved, Rejected" />
+        <input type="submit" value="Search" class="btn btn-primary" />
+        <a asp-action="Index" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+
+<br />
+
 <table class="table">
     <thead>
         <tr>
@@ -34,32 +47,35 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Message)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SubmittedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AdminResponse)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Match.BlackPlayerId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Player.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.AppealId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.AppealId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.AppealId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Message)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SubmittedAt)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AdminResponse)
+                </td>
+                <td>
+                    @* Show GameId instead of BlackPlayerId *@
+                    @Html.DisplayFor(modelItem => item.Match.GameId)
+                </td>
+                <td>
+                    @* Show player username instead of ID *@
+                    @Html.DisplayFor(modelItem => item.Player.UserName)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.AppealId">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.AppealId">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.AppealId">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
