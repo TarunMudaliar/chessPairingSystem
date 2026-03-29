@@ -1,17 +1,36 @@
 ﻿@model IEnumerable<chessPairingSystem.Models.Match>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Matches";
 }
 
-<h1>Index</h1>
+<h1>Matches</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+@* Search form - submits search string to Index action *@
+<form asp-action="Index" method="get">
+    <div class="form-group">
+        <label>Search by Player Name:</label>
+        <input type="text" name="searchString" value="@ViewData["CurrentSearch"]" class="form-control" style="width:300px; display:inline;" />
+        <input type="submit" value="Search" class="btn btn-primary" />
+        <a asp-action="Index" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+
+<br />
+
 <table class="table">
     <thead>
         <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.WhitePlayer)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BlackPlayer)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.WhiteResult)
             </th>
@@ -30,48 +49,44 @@
             <th>
                 @Html.DisplayNameFor(model => model.ScheduledTime)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.WhitePlayer)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BlackPlayer)
-            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.WhiteResult)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.BlackResult)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MatchDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Location)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ScheduledTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.WhitePlayer.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.BlackPlayer.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.GameId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.GameId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.GameId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @* Show player username instead of ID *@
+                    @Html.DisplayFor(modelItem => item.WhitePlayer.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BlackPlayer.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.WhiteResult)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BlackResult)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MatchDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Location)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ScheduledTime)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.GameId">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.GameId">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.GameId">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
