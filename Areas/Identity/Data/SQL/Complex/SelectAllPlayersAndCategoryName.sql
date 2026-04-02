@@ -1,4 +1,4 @@
-﻿SELECT u.UserName, 
+﻿SELECT u.PlayerName, 
        u.Email, 
        u.Ratings,
        c.CategoryName
