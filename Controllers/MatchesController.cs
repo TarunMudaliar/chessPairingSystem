@@ -63,8 +63,8 @@ namespace chessPairingSystem.Controllers
         // GET: Matches/Create
         public IActionResult Create()
         {
-            ViewData["BlackPlayerId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["WhitePlayerId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["BlackPlayerId"] = new SelectList(_context.Users, "Id", "UserName");
+            ViewData["WhitePlayerId"] = new SelectList(_context.Users, "Id", "UserName");
             return View();
         }
 
@@ -73,14 +73,20 @@ namespace chessPairingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("GameId,WhitePlayerId,BlackPlayerId,WhiteResult,BlackResult,Status,MatchDate,Location,ScheduledTime")] Match match)
         {
+            // Validation : prevent same player being selected for both sides
+            if (match.WhitePlayerId == match.BlackPlayerId)
+            {
+                ModelState.AddModelError(string.Empty, "White Player and Black Player cannot be the same player.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(match);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BlackPlayerId"] = new SelectList(_context.Users, "Id", "Id", match.BlackPlayerId);
-            ViewData["WhitePlayerId"] = new SelectList(_context.Users, "Id", "Id", match.WhitePlayerId);
+            ViewData["BlackPlayerId"] = new SelectList(_context.Users, "Id", "UserName", match.BlackPlayerId);
+            ViewData["WhitePlayerId"] = new SelectList(_context.Users, "Id", "UserName", match.WhitePlayerId);
             return View(match);
         }
 
@@ -97,8 +103,8 @@ namespace chessPairingSystem.Controllers
             {
                 return NotFound();
             }
-            ViewData["BlackPlayerId"] = new SelectList(_context.Users, "Id", "Id", match.BlackPlayerId);
-            ViewData["WhitePlayerId"] = new SelectList(_context.Users, "Id", "Id", match.WhitePlayerId);
+            ViewData["BlackPlayerId"] = new SelectList(_context.Users, "Id", "UserName", match.BlackPlayerId);
+            ViewData["WhitePlayerId"] = new SelectList(_context.Users, "Id", "UserName", match.WhitePlayerId);
             return View(match);
         }
 
@@ -110,6 +116,12 @@ namespace chessPairingSystem.Controllers
             if (id != match.GameId)
             {
                 return NotFound();
+            }
+
+            // Validation - prevent same player being selected for both sides
+            if (match.WhitePlayerId == match.BlackPlayerId)
+            {
+                ModelState.AddModelError(string.Empty, "White Player and Black Player cannot be the same player.");
             }
 
             if (ModelState.IsValid)
@@ -132,8 +144,8 @@ namespace chessPairingSystem.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BlackPlayerId"] = new SelectList(_context.Users, "Id", "Id", match.BlackPlayerId);
-            ViewData["WhitePlayerId"] = new SelectList(_context.Users, "Id", "Id", match.WhitePlayerId);
+            ViewData["BlackPlayerId"] = new SelectList(_context.Users, "Id", "UserName", match.BlackPlayerId);
+            ViewData["WhitePlayerId"] = new SelectList(_context.Users, "Id", "UserName", match.WhitePlayerId);
             return View(match);
         }
 
