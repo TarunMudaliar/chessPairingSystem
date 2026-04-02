@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<chessPairingSystem.Models.MatchQueue>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Queue";
 }
 
 <h1>Queue</h1>
@@ -9,9 +9,25 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+@* Search form - search queue entries by player username *@
+<form asp-action="Index" method="get">
+    <div class="form-group">
+        <label>Search by Player Name:</label>
+        <input type="text" name="searchString" value="@ViewData["CurrentSearch"]" class="form-control" style="width:300px; display:inline;" />
+        <input type="submit" value="Search" class="btn btn-primary" />
+        <a asp-action="Index" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+
+<br />
+
 <table class="table">
     <thead>
         <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Player)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.TimeJoined)
             </th>
@@ -21,33 +37,31 @@
             <th>
                 @Html.DisplayNameFor(model => model.ScheduledTime)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Player)
-            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.TimeJoined)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Location)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ScheduledTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Player.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.QueueId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.QueueId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.QueueId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Player.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TimeJoined)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Location)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ScheduledTime)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.QueueId">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.QueueId">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.QueueId">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
