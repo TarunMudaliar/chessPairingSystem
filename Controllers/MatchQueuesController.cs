@@ -20,10 +20,22 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: MatchQueues
-        public async Task<IActionResult> Index()
+        // LINQ - Search queue entries by player username
+        public async Task<IActionResult> Index(string searchString)
         {
-            var chessPairingSystemContext = _context.MatchQueue.Include(m => m.Player);
-            return View(await chessPairingSystemContext.ToListAsync());
+            // LINQ - Get all queue entries from database
+            var matchQueues = from m in _context.MatchQueue
+                              select m;
+
+            // LINQ - Filter queue entries by player username if search string is provided
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                matchQueues = matchQueues.Where(m => m.Player.UserName.Contains(searchString));
+            }
+
+            // LINQ - Include related player data and return to view
+            return View(await matchQueues.Include(m => m.Player)
+                                         .ToListAsync());
         }
 
         // GET: MatchQueues/Details/5
@@ -48,13 +60,11 @@ namespace chessPairingSystem.Controllers
         // GET: MatchQueues/Create
         public IActionResult Create()
         {
-            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName");
             return View();
         }
 
         // POST: MatchQueues/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("QueueId,PlayerId,TimeJoined,Location,ScheduledTime")] MatchQueue matchQueue)
@@ -65,7 +75,7 @@ namespace chessPairingSystem.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "Id", matchQueue.PlayerId);
+            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName", matchQueue.PlayerId);
             return View(matchQueue);
         }
 
@@ -82,13 +92,11 @@ namespace chessPairingSystem.Controllers
             {
                 return NotFound();
             }
-            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "Id", matchQueue.PlayerId);
+            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName", matchQueue.PlayerId);
             return View(matchQueue);
         }
 
         // POST: MatchQueues/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("QueueId,PlayerId,TimeJoined,Location,ScheduledTime")] MatchQueue matchQueue)
@@ -118,7 +126,7 @@ namespace chessPairingSystem.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "Id", matchQueue.PlayerId);
+            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName", matchQueue.PlayerId);
             return View(matchQueue);
         }
 
