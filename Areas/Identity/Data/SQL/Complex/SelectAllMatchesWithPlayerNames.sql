@@ -1,6 +1,6 @@
 ﻿SELECT m.GameId, 
-       wp.UserName AS WhitePlayer, 
-       bp.UserName AS BlackPlayer, 
+       wp.PlayerName AS WhitePlayer, 
+       bp.PlayerName AS BlackPlayer, 
        m.Status, 
        m.MatchDate
 FROM Match m

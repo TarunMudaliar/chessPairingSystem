@@ -1,5 +1,5 @@
 ﻿SELECT a.AppealId,
-       u.UserName AS SubmittedBy,
+       u.PlayerName AS SubmittedBy,
        a.Message,
        a.AdminResponse,
        a.SubmittedAt

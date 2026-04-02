@@ -1,1 +1,1 @@
-﻿SELECT UserName, Email, Ratings FROM AspNetUsers;
+﻿SELECT PlayerName, Email, Ratings FROM AspNetUsers;

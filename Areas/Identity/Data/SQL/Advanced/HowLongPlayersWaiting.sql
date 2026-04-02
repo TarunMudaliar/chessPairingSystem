@@ -1,4 +1,4 @@
-﻿SELECT u.UserName,
+﻿SELECT u.PlayerName,
        c.CategoryName,
        mq.TimeJoined,
        mq.Location,
