@@ -17,30 +17,31 @@ namespace chessPairingSystem.Models
         [Required]
         public string BlackPlayerId { get; set; }
 
-        // Result entered by white player - W, L or D
+        // Result entered by white player - W, L or D - max 10 characters
         [StringLength(10)]
         [Display(Name = "White Result")]
         public string? WhiteResult { get; set; }
 
-        // Result entered by black player - W, L or D
+        // Result entered by black player - W, L or D - max 10 characters
         [StringLength(10)]
         [Display(Name = "Black Result")]
         public string? BlackResult { get; set; }
 
-        // Match status - Pending, Completed or Disputed
+        // Match status - Pending, Completed or Disputed - max 10 characters
         [StringLength(10)]
         public string? Status { get; set; }
 
-        // Date and time the match was created 
+        // Date of the match - cannot be in the past
         [Required]
         [Display(Name = "Match Date")]
+        [DataType(DataType.Date)]
         public DateTime MatchDate { get; set; }
 
-        // Location where the game will be played e.g. Chess Club
+        // Location where the game will be played e.g. Chess Club - max 20 characters
         [StringLength(20)]
         public string? Location { get; set; }
 
-        // Scheduled time for the game e.g. Lunchtime
+        // Scheduled time for the game e.g. Lunchtime - max 20 characters
         [StringLength(20)]
         [Display(Name = "Scheduled Time")]
         public string? ScheduledTime { get; set; }
