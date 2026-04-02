@@ -32,6 +32,7 @@ namespace chessPairingSystem.Models
         // Date and time the appeal was submitted - required
         [Required]
         [Display(Name = "Submitted At")]
+        [DataType(DataType.DateTime)]
         public DateTime SubmittedAt { get; set; }
 
         // Admin's response to the appeal - nullable until admin responds - max 500 characters

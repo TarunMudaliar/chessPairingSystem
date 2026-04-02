@@ -7,9 +7,9 @@ namespace chessPairingSystem.Models
         [Key]
         public int CategoryId { get; set; }
 
-        // Category name is required and has to be under 50 characters
+        // Category name is required, must be between 2 and 50 characters
         [Required]
-        [StringLength(50)]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Category name must be between 2 and 50 characters")]
         [Display(Name = "Category Name")]
         public string CategoryName { get; set; }
     }
