@@ -62,8 +62,8 @@ namespace chessPairingSystem.Controllers
         // GET: Appeals/Create
         public IActionResult Create()
         {
-            ViewData["GameId"] = new SelectList(_context.Match, "GameId", "BlackPlayerId");
-            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["GameId"] = new SelectList(_context.Match, "GameId", "GameId");
+            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName");
             return View();
         }
 
@@ -78,8 +78,8 @@ namespace chessPairingSystem.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["GameId"] = new SelectList(_context.Match, "GameId", "BlackPlayerId", appeal.GameId);
-            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "Id", appeal.PlayerId);
+            ViewData["GameId"] = new SelectList(_context.Match, "GameId", "GameId", appeal.GameId);
+            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName", appeal.PlayerId);
             return View(appeal);
         }
 
@@ -96,8 +96,8 @@ namespace chessPairingSystem.Controllers
             {
                 return NotFound();
             }
-            ViewData["GameId"] = new SelectList(_context.Match, "GameId", "BlackPlayerId", appeal.GameId);
-            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "Id", appeal.PlayerId);
+            ViewData["GameId"] = new SelectList(_context.Match, "GameId", "GameId", appeal.GameId);
+            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName", appeal.PlayerId);
             return View(appeal);
         }
 
@@ -131,8 +131,8 @@ namespace chessPairingSystem.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["GameId"] = new SelectList(_context.Match, "GameId", "BlackPlayerId", appeal.GameId);
-            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "Id", appeal.PlayerId);
+            ViewData["GameId"] = new SelectList(_context.Match, "GameId", "GameId", appeal.GameId);
+            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName", appeal.PlayerId);
             return View(appeal);
         }
 
