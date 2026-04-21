@@ -3,7 +3,7 @@
        bp.PlayerName AS BlackPlayer,
        m.WhiteResult,
        m.BlackResult,
-       m.MatchDate
+       CONVERT(varchar(19), m.MatchDate, 120) AS MatchDate
 FROM Match m
 JOIN AspNetUsers wp ON m.WhitePlayerId = wp.Id
 JOIN AspNetUsers bp ON m.BlackPlayerId = bp.Id

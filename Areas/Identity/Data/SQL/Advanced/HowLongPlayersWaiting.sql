@@ -1,6 +1,6 @@
 ﻿SELECT u.PlayerName,
        c.CategoryName,
-       mq.TimeJoined,
+       CONVERT(varchar(19), mq.TimeJoined, 120) AS TimeJoined,
        mq.Location,
        mq.ScheduledTime,
        DATEDIFF(MINUTE, mq.TimeJoined, GETDATE()) AS MinutesWaiting
