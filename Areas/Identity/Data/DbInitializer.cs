@@ -8,10 +8,7 @@ namespace chessPairingSystem.Areas.Identity.Data
 {
     public static class DbInitializer
     {
-        /// <summary>
-        /// Apply pending migrations and seed minimal data that matches the provided SQL inserts in the repository.
-        /// This method intentionally seeds only the same Category row(s) present in the included SQL files.
-        /// </summary>
+        
         public static void Initialize(IServiceProvider services)
         {
             using var scope = services.CreateScope();
@@ -19,7 +16,6 @@ namespace chessPairingSystem.Areas.Identity.Data
 
             var context = provider.GetRequiredService<chessPairingSystemContext>();
 
-            // Apply migrations (safe no-op if up-to-date)
             try
             {
                 context.Database.Migrate();
@@ -29,7 +25,6 @@ namespace chessPairingSystem.Areas.Identity.Data
                 Console.WriteLine("Database migration failed: " + ex.Message);
             }
 
-            // Seed random demo data for all entities if tables are empty
             var rnd = new Random(12345);
 
             // Categories
