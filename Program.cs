@@ -21,6 +21,9 @@ namespace chessPairingSystem
 
             var app = builder.Build();
 
+            // Initialize database and seed data
+            chessPairingSystem.Areas.Identity.Data.DbInitializer.Initialize(app.Services);
+
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
