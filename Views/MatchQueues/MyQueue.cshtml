@@ -1,0 +1,33 @@
+﻿@model chessPairingSystem.Models.MatchQueue
+@{
+    ViewData["Title"] = "My Queue Status";
+}
+
+<h2>My Queue Status</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (Model == null)
+{
+    <div class="alert alert-info">You are not currently in the queue.</div>
+    <a asp-action="JoinQueue" class="btn btn-primary">Join Queue</a>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">You are in the queue!</h5>
+            <p><strong>Waiting since:</strong> @Model.TimeJoined.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><strong>Location:</strong> @Model.Location</p>
+            <p><strong>Scheduled Time:</strong> @Model.ScheduledTime</p>
+        </div>
+    </div>
+
+    <form asp-action="LeaveQueue" method="post" class="mt-3">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-danger">Leave Queue</button>
+    </form>
+}
