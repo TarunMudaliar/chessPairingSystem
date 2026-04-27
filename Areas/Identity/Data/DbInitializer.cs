@@ -1,48 +1,64 @@
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace chessPairingSystem.Areas.Identity.Data
 {
     public static class DbInitializer
     {
-        
-        public static void Initialize(IServiceProvider services)
+        public static async Task Initialize(IServiceProvider services)
         {
             using var scope = services.CreateScope();
             var provider = scope.ServiceProvider;
 
             var context = provider.GetRequiredService<chessPairingSystemContext>();
+            var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
 
-            try
+            try { context.Database.Migrate(); }
+            catch (Exception ex) { Console.WriteLine("Migration failed: " + ex.Message); }
+
+            //  Roles 
+            foreach (var role in new[] { "Admin", "Player" })
             {
-                context.Database.Migrate();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Database migration failed: " + ex.Message);
+                if (!await roleManager.RoleExistsAsync(role))
+                    await roleManager.CreateAsync(new IdentityRole(role));
             }
 
-            var rnd = new Random(12345);
-
-            // Categories
+            //  Categories 
             if (!context.Category.Any())
             {
-                var catNames = new[] { "Year 9", "Year 10", "Year 11", "Year 12", "Year 13" };
-                foreach (var name in catNames)
-                {
+                foreach (var name in new[] { "Year 9", "Year 10", "Year 11", "Year 12", "Year 13" })
                     context.Category.Add(new chessPairingSystem.Models.Category { CategoryName = name });
-                }
                 context.SaveChanges();
             }
 
-            // Users
-            var userManager = provider.GetService<UserManager<ApplicationUser>>();
-            if (userManager != null && !context.Users.Any())
+            //  Admin user 
+            const string adminEmail = "admin@chess.com";
+            const string adminPassword = "Admin@123";
+
+            if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
-                var categoriesList = context.Category.ToList();
+                var admin = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    EmailConfirmed = true,
+                    PlayerName = "Admin",
+                    Ratings = 0
+                };
+                var result = await userManager.CreateAsync(admin, adminPassword);
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(admin, "Admin");
+                else
+                    Console.WriteLine("Failed to create admin: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+
+            // players 
+            var rnd = new Random(12345);
+            var categories = context.Category.ToList();
+
+            if (!context.Users.Any(u => u.Email != adminEmail))
+            {
                 var demoNames = new[] { "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Heidi", "Ivan", "Judy" };
                 foreach (var name in demoNames)
                 {
@@ -52,34 +68,26 @@ namespace chessPairingSystem.Areas.Identity.Data
                         UserName = email,
                         Email = email,
                         EmailConfirmed = true,
-                        PlayerName = name + " " + (new string((char)('A' + rnd.Next(0, 26)), 1)),
-                        CategoryId = categoriesList[rnd.Next(categoriesList.Count)].CategoryId,
+                        PlayerName = name + " " + (char)('A' + rnd.Next(0, 26)),
+                        CategoryId = categories[rnd.Next(categories.Count)].CategoryId,
                         Ratings = rnd.Next(800, 2200)
                     };
-                    var pwd = "Password123!";
-                    var res = userManager.CreateAsync(user, pwd).GetAwaiter().GetResult();
-                    if (!res.Succeeded)
-                    {
-                        Console.WriteLine("Failed to create demo user " + email + ": " + string.Join(", ", res.Errors.Select(e => e.Description)));
-                    }
+                    var result = await userManager.CreateAsync(user, "Password123!");
+                    if (result.Succeeded)
+                        await userManager.AddToRoleAsync(user, "Player");
+                    else
+                        Console.WriteLine("Failed to create " + email + ": " + string.Join(", ", result.Errors.Select(e => e.Description)));
                 }
             }
 
-            context.SaveChanges();
-
-            // Matches
+            //  Matches 
             if (!context.Match.Any())
             {
-                var users = context.Users.ToList();
+                var users = context.Users.Where(u => u.Email != adminEmail).ToList();
                 for (int i = 0; i < 20; i++)
                 {
                     var white = users[rnd.Next(users.Count)];
-                    var black = users[rnd.Next(users.Count)];
-                    if (white.Id == black.Id)
-                    {
-                        // ensure different players
-                        black = users[(users.IndexOf(white) + 1) % users.Count];
-                    }
+                    var black = users[(users.IndexOf(white) + 1 + rnd.Next(users.Count - 1)) % users.Count];
                     var match = new chessPairingSystem.Models.Match
                     {
                         WhitePlayerId = white.Id,
@@ -87,11 +95,11 @@ namespace chessPairingSystem.Areas.Identity.Data
                         MatchDate = DateTime.Now.AddDays(-rnd.Next(0, 30)).AddHours(-rnd.Next(0, 72)),
                         Location = "Chess Club",
                         ScheduledTime = "Lunchtime",
-                        Status = (rnd.NextDouble() > 0.4) ? "Completed" : "Pending",
+                        Status = rnd.NextDouble() > 0.4 ? "Completed" : "Pending"
                     };
                     if (match.Status == "Completed")
                     {
-                        var outcome = rnd.Next(0, 3);
+                        var outcome = rnd.Next(3);
                         if (outcome == 0) { match.WhiteResult = "W"; match.BlackResult = "L"; }
                         else if (outcome == 1) { match.WhiteResult = "L"; match.BlackResult = "W"; }
                         else { match.WhiteResult = "D"; match.BlackResult = "D"; }
@@ -101,44 +109,39 @@ namespace chessPairingSystem.Areas.Identity.Data
                 context.SaveChanges();
             }
 
-            // Appeals
+            //  Appeals
             if (!context.Appeal.Any())
             {
                 var matches = context.Match.ToList();
-                var users = context.Users.ToList();
+                var users = context.Users.Where(u => u.Email != adminEmail).ToList();
                 for (int i = 0; i < Math.Min(10, matches.Count); i++)
                 {
-                    var m = matches[rnd.Next(matches.Count)];
-                    var player = users[rnd.Next(users.Count)];
-                    var appeal = new chessPairingSystem.Models.Appeal
+                    context.Appeal.Add(new chessPairingSystem.Models.Appeal
                     {
-                        GameId = m.GameId,
-                        PlayerId = player.Id,
+                        GameId = matches[rnd.Next(matches.Count)].GameId,
+                        PlayerId = users[rnd.Next(users.Count)].Id,
                         Message = "I would like to appeal the result because...",
-                        Status = (rnd.NextDouble() > 0.6) ? "Resolved" : "Pending",
+                        Status = rnd.NextDouble() > 0.6 ? "Resolved" : "Pending",
                         SubmittedAt = DateTime.Now.AddDays(-rnd.Next(0, 10)),
-                        AdminResponse = (rnd.NextDouble() > 0.6) ? "Reviewed and resolved." : null
-                    };
-                    context.Appeal.Add(appeal);
+                        AdminResponse = rnd.NextDouble() > 0.6 ? "Reviewed and resolved." : null
+                    });
                 }
                 context.SaveChanges();
             }
 
-            // MatchQueue
+            //  Match Queue 
             if (!context.MatchQueue.Any())
             {
-                var users = context.Users.ToList();
-                for (int i = 0; i < Math.Min(10, users.Count); i++)
+                var users = context.Users.Where(u => u.Email != adminEmail).ToList();
+                for (int i = 0; i < Math.Min(3, users.Count); i++)
                 {
-                    var u = users[i];
-                    var q = new chessPairingSystem.Models.MatchQueue
+                    context.MatchQueue.Add(new chessPairingSystem.Models.MatchQueue
                     {
-                        PlayerId = u.Id,
+                        PlayerId = users[i].Id,
                         TimeJoined = DateTime.Now.AddMinutes(-rnd.Next(0, 300)),
                         Location = "Chess Club",
                         ScheduledTime = "After School"
-                    };
-                    context.MatchQueue.Add(q);
+                    });
                 }
                 context.SaveChanges();
             }

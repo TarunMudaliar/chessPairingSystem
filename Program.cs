@@ -7,36 +7,33 @@ namespace chessPairingSystem
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)  
         {
             var builder = WebApplication.CreateBuilder(args);
-            var connectionString = builder.Configuration.GetConnectionString("chessPairingSystemContextConnection") ?? throw new InvalidOperationException("Connection string 'chessPairingSystemContextConnection' not found.");;
+            var connectionString = builder.Configuration.GetConnectionString("chessPairingSystemContextConnection") ?? throw new InvalidOperationException("Connection string 'chessPairingSystemContextConnection' not found.");
 
             builder.Services.AddDbContext<chessPairingSystemContext>(options => options.UseSqlServer(connectionString));
 
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<chessPairingSystemContext>();
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                .AddRoles<IdentityRole>()  
+                .AddEntityFrameworkStores<chessPairingSystemContext>();
 
-            // Add services to the container.
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
             // Initialize database and seed data
-            chessPairingSystem.Areas.Identity.Data.DbInitializer.Initialize(app.Services);
+            await DbInitializer.Initialize(app.Services);  
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
