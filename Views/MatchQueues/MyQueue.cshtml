@@ -7,7 +7,10 @@
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
 @if (Model == null)
@@ -17,6 +20,12 @@
 }
 else
 {
+    <meta http-equiv="refresh" content="5">
+
+    <div class="alert alert-info">
+        Waiting for an opponent... This page refreshes every 5 seconds.
+    </div>
+
     <div class="card">
         <div class="card-body">
             <h5 class="card-title">You are in the queue!</h5>

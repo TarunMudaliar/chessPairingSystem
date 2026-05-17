@@ -121,8 +121,6 @@ namespace chessPairingSystem.Controllers
 
             if (waitingPlayer != null)
             {
-                // A waiting player was found - create a match
-
                 // Randomly assign white and black pieces
                 var rnd = new Random();
                 string whitePlayerId, blackPlayerId;
@@ -155,7 +153,7 @@ namespace chessPairingSystem.Controllers
 
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = $"Match created! Head to {location} at {scheduledTime}.";
+                TempData["Success"] = $"You have been paired! Head to {location} at {scheduledTime}.";
                 return RedirectToAction("Index", "Matches");
             }
             else
@@ -189,7 +187,22 @@ namespace chessPairingSystem.Controllers
                 .Include(q => q.Player)
                 .FirstOrDefaultAsync(q => q.PlayerId == currentUser.Id);
 
-            return View(queueEntry); // null means not in queue
+            // If no longer in queue, check if they got paired and redirect to matches
+            if (queueEntry == null)
+            {
+                var activeMatch = await _context.Match
+                    .AnyAsync(m =>
+                        (m.WhitePlayerId == currentUser.Id || m.BlackPlayerId == currentUser.Id)
+                        && m.Status == "Pending");
+
+                if (activeMatch)
+                {
+                    TempData["Success"] = "You have been paired! Your match is ready.";
+                    return RedirectToAction("Index", "Matches");
+                }
+            }
+
+            return View(queueEntry);
         }
 
         // POST: MatchQueues/LeaveQueue
@@ -230,7 +243,7 @@ namespace chessPairingSystem.Controllers
             return View(matchQueue);
         }
 
-        // POST: MatchQueues/Delete/5 - Admin only
+        // GET: MatchQueues/Delete/5 - Admin only
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {

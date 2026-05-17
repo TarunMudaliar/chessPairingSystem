@@ -1,16 +1,35 @@
 ﻿@model IEnumerable<chessPairingSystem.Models.Match>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<chessPairingSystem.Areas.Identity.Data.ApplicationUser> SignInManager
+@inject UserManager<chessPairingSystem.Areas.Identity.Data.ApplicationUser> UserManager
 
 @{
     ViewData["Title"] = "Matches";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
 <h1>Matches</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
-@* Search form - submits search string to Index action *@
+@if (User.IsInRole("Admin"))
+{
+    <p><a asp-action="Create">Create New</a></p>
+}
+
 <form asp-action="Index" method="get">
     <div class="form-group">
         <label>Search by Player Name:</label>
@@ -25,30 +44,14 @@
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.WhitePlayer)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BlackPlayer)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.WhiteResult)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BlackResult)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MatchDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Location)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ScheduledTime)
-            </th>
+            <th>@Html.DisplayNameFor(model => model.WhitePlayer)</th>
+            <th>@Html.DisplayNameFor(model => model.BlackPlayer)</th>
+            <th>@Html.DisplayNameFor(model => model.WhiteResult)</th>
+            <th>@Html.DisplayNameFor(model => model.BlackResult)</th>
+            <th>@Html.DisplayNameFor(model => model.Status)</th>
+            <th>@Html.DisplayNameFor(model => model.MatchDate)</th>
+            <th>@Html.DisplayNameFor(model => model.Location)</th>
+            <th>@Html.DisplayNameFor(model => model.ScheduledTime)</th>
             <th></th>
         </tr>
     </thead>
@@ -56,35 +59,53 @@
         @foreach (var item in Model)
         {
             <tr>
+                <td>@Html.DisplayFor(modelItem => item.WhitePlayer.UserName)</td>
+                <td>@Html.DisplayFor(modelItem => item.BlackPlayer.UserName)</td>
+                <td>@Html.DisplayFor(modelItem => item.WhiteResult)</td>
+                <td>@Html.DisplayFor(modelItem => item.BlackResult)</td>
                 <td>
-                    @* Show player username instead of ID *@
-                    @Html.DisplayFor(modelItem => item.WhitePlayer.UserName)
+                    @if (item.Status == "Completed")
+                    {
+                        <span class="badge bg-success">Completed</span>
+                    }
+                    else if (item.Status == "Disputed")
+                    {
+                        <span class="badge bg-danger">Disputed</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    }
                 </td>
+                <td>@Html.DisplayFor(modelItem => item.MatchDate)</td>
+                <td>@Html.DisplayFor(modelItem => item.Location)</td>
+                <td>@Html.DisplayFor(modelItem => item.ScheduledTime)</td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.BlackPlayer.UserName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.WhiteResult)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.BlackResult)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Status)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.MatchDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Location)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ScheduledTime)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.GameId">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.GameId">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.GameId">Delete</a>
+                    @if (item.Status == "Pending" && User.IsInRole("Player"))
+                    {
+                        bool isWhite = item.WhitePlayerId == currentUserId;
+                        bool isBlack = item.BlackPlayerId == currentUserId;
+                        bool isInMatch = isWhite || isBlack;
+                        bool alreadySubmitted = (isWhite && item.WhiteResult != null) || (isBlack && item.BlackResult != null);
+
+                        if (isInMatch && !alreadySubmitted)
+                        {
+                            <a asp-action="SubmitResult" asp-route-id="@item.GameId" class="btn btn-sm btn-success">Submit Result</a>
+                        }
+                        else if (isInMatch && alreadySubmitted)
+                        {
+                            <span class="badge bg-warning text-dark">Awaiting opponent</span>
+                        }
+                    }
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.GameId">Edit</a>
+                        @Html.Raw(" | ")
+                        <a asp-action="Details" asp-route-id="@item.GameId">Details</a>
+                        @Html.Raw(" | ")
+                        <a asp-action="Delete" asp-route-id="@item.GameId">Delete</a>
+                    }
                 </td>
             </tr>
         }

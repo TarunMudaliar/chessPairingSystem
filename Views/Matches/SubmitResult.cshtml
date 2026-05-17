@@ -1,0 +1,49 @@
+﻿@model chessPairingSystem.Models.Match
+@{
+    ViewData["Title"] = "Submit Result";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    bool isWhitePlayer = Model.WhitePlayerId == currentUserId;
+    string opponentName = isWhitePlayer ? Model.BlackPlayer?.UserName : Model.WhitePlayer?.UserName;
+}
+
+<h2>Submit Match Result</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <p><strong>You are playing as:</strong> @(isWhitePlayer ? "White" : "Black")</p>
+        <p><strong>Opponent:</strong> @opponentName</p>
+        <p><strong>Location:</strong> @Model.Location</p>
+        <p><strong>Scheduled Time:</strong> @Model.ScheduledTime</p>
+        <p><strong>Date:</strong> @Model.MatchDate.ToString("dd/MM/yyyy")</p>
+    </div>
+</div>
+
+<form asp-action="SubmitResult" asp-route-id="@Model.GameId" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">What was your result?</label>
+        <div class="d-flex gap-3">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="result" id="win" value="W" required />
+                <label class="form-check-label" for="win">Win</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="result" id="loss" value="L" />
+                <label class="form-check-label" for="loss">Loss</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="result" id="draw" value="D" />
+                <label class="form-check-label" for="draw">Draw</label>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Result</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
