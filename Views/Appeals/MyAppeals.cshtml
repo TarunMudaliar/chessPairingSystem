@@ -1,0 +1,92 @@
+﻿@model IEnumerable<chessPairingSystem.Models.Appeal>
+
+@{
+    ViewData["Title"] = "My Appeals";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">My Appeals</h1>
+            <p class="text-muted mb-0">Track the status of your match disputes</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            Submit New Appeal
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info border-0 shadow-sm" role="alert">
+            You haven't submitted any appeals yet.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Game ID</th>
+                            <th>My Message</th>
+                            <th>Submitted At</th>
+                            <th>Status</th>
+                            <th>Admin Response</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-secondary">#@item.Match?.GameId</span>
+                                </td>
+                                <td>
+                                    <span class="text-truncate d-inline-block" style="max-width: 250px;" title="@item.Message">
+                                        @item.Message
+                                    </span>
+                                </td>
+                                <td>
+                                    @item.SubmittedAt.ToString("g")
+                                </td>
+                                <td>
+                                    @if (item.Status == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1.5">Pending</span>
+                                    }
+                                    else if (item.Status == "Resolved")
+                                    {
+                                        <span class="badge bg-success rounded-pill px-2.5 py-1.5">Resolved</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary rounded-pill px-2.5 py-1.5">@item.Status</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (string.IsNullOrEmpty(item.AdminResponse))
+                                    {
+                                        <span class="text-muted small italic">Awaiting evaluation...</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-dark border-start border-2 border-success ps-2 d-block text-truncate" style="max-width: 200px;" title="@item.AdminResponse">
+                                            @item.AdminResponse
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Details" asp-route-id="@item.AppealId" class="btn btn-sm btn-outline-secondary">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

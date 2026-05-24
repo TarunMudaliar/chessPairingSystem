@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using chessPairingSystem.Areas.Identity.Data;
 using chessPairingSystem.Models;
+using System.Security.Claims; // Required to extract the logged-in User's ID
 
 namespace chessPairingSystem.Controllers
 {
@@ -19,8 +20,30 @@ namespace chessPairingSystem.Controllers
             _context = context;
         }
 
+        // GET: Appeals/MyAppeals
+        // Fetches appeals filed only by the currently logged-in player
+        public async Task<IActionResult> MyAppeals()
+        {
+            // 1. Get the unique User ID of the currently logged-in player
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+            {
+                return Challenge(); // Forces them to log in if their session expired
+            }
+
+            // 2. Query the database, filtering appeals where PlayerId matches the current user
+            var playerAppeals = _context.Appeal
+                .Where(a => a.PlayerId == userId)
+                .Include(a => a.Match)
+                .Include(a => a.Player);
+
+            // 3. Send the filtered list to the view
+            return View(await playerAppeals.ToListAsync());
+        }
+
         // GET: Appeals
-        // LINQ - Search appeals by status
+        // LINQ - Search appeals by status (Admin view)
         public async Task<IActionResult> Index(string searchString)
         {
             // LINQ - Get all appeals from database
@@ -70,16 +93,30 @@ namespace chessPairingSystem.Controllers
         // POST: Appeals/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AppealId,GameId,PlayerId,Message,Status,SubmittedAt,AdminResponse")] Appeal appeal)
+        public async Task<IActionResult> Create([Bind("AppealId,GameId,Message")] Appeal appeal)
         {
+            // 1. Automatically attach the logged-in Player's ID to prevent identity spoofing
+            appeal.PlayerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // 2. Force default values on the server side for safety and automation
+            appeal.Status = "Pending";
+            appeal.SubmittedAt = DateTime.Now;
+            appeal.AdminResponse = "";
+
+            // Clear manual injection properties out of validation states
+            ModelState.Remove("PlayerId");
+            ModelState.Remove("Status");
+
             if (ModelState.IsValid)
             {
                 _context.Add(appeal);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                // 3. Redirect back to the player's dashboard layout
+                return RedirectToAction(nameof(MyAppeals));
             }
+
             ViewData["GameId"] = new SelectList(_context.Match, "GameId", "GameId", appeal.GameId);
-            ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName", appeal.PlayerId);
             return View(appeal);
         }
 
