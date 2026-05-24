@@ -24,32 +24,32 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: MatchQueues
-        // Admin only - view all players currently in queue
+        // Only Admins can see this page to look at everyone currently waiting in the queue
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index(string searchString)
         {
-            // LINQ - Get all queue entries from database
+            // Get all queue entries from the database
             var matchQueues = from m in _context.MatchQueue
                               select m;
 
-            // LINQ - Filter queue entries by player username if search string is provided
+            // If the admin types a name in the search box, filter the list by that name
             if (!String.IsNullOrEmpty(searchString))
             {
                 matchQueues = matchQueues.Where(m => m.Player.UserName.Contains(searchString));
             }
 
-            // LINQ - Include related player data and return to view
+            // Load the player names and show the list on the page
             return View(await matchQueues.Include(m => m.Player).ToListAsync());
         }
 
         // GET: MatchQueues/JoinQueue
-        // Shows the join queue form for the logged in player
+        // Opens the page where a student can click to join the queue
         [Authorize(Roles = "Player")]
         public async Task<IActionResult> JoinQueue()
         {
             var currentUser = await _userManager.GetUserAsync(User);
 
-            // Check if player is already in the queue
+            //  Stop the player if they are already waiting in the queue
             var alreadyInQueue = await _context.MatchQueue
                 .AnyAsync(q => q.PlayerId == currentUser.Id);
 
@@ -59,7 +59,7 @@ namespace chessPairingSystem.Controllers
                 return RedirectToAction("MyQueue");
             }
 
-            // Check if player already has an active (Pending) match
+            // Stop the player if they have an active game that isn't finished yet
             var activeMatch = await _context.Match
                 .AnyAsync(m =>
                     (m.WhitePlayerId == currentUser.Id || m.BlackPlayerId == currentUser.Id)
@@ -75,22 +75,22 @@ namespace chessPairingSystem.Controllers
         }
 
         // POST: MatchQueues/JoinQueue
-        // Core pairing logic - joins queue or pairs with waiting player
+        // This runs when the student clicks the button to find a match
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken] // Security step to prevent fake form submissions
         [Authorize(Roles = "Player")]
         public async Task<IActionResult> JoinQueue(string location, string scheduledTime)
         {
             var currentUser = await _userManager.GetUserAsync(User);
 
-            // Validate location and scheduled time are provided
+            // Make sure the player didn't leave the location or time fields blank
             if (string.IsNullOrEmpty(location) || string.IsNullOrEmpty(scheduledTime))
             {
                 ModelState.AddModelError("", "Please select a location and scheduled time.");
                 return View();
             }
 
-            // Check if player is already in the queue
+            // Double check they aren't already in the queue
             var alreadyInQueue = await _context.MatchQueue
                 .AnyAsync(q => q.PlayerId == currentUser.Id);
 
@@ -100,7 +100,7 @@ namespace chessPairingSystem.Controllers
                 return RedirectToAction("MyQueue");
             }
 
-            // Check if player already has an active match
+            // Double check they don't have an unfinished match
             var activeMatch = await _context.Match
                 .AnyAsync(m =>
                     (m.WhitePlayerId == currentUser.Id || m.BlackPlayerId == currentUser.Id)
@@ -112,16 +112,19 @@ namespace chessPairingSystem.Controllers
                 return RedirectToAction("Index", "Matches");
             }
 
-            // PAIRING LOGIC
-            // LINQ - Find the first player waiting in the queue who is not the current player
+            // --- PAIRING LOGIC ---
+
+            // Look for the first person in the queue who is NOT the current user.
+            // Sort by TimeJoined so the person who has been waiting the longest gets a game first.
             var waitingPlayer = await _context.MatchQueue
                 .Where(q => q.PlayerId != currentUser.Id)
-                .OrderBy(q => q.TimeJoined) // Fairness - pair with longest waiting player first
+                .OrderBy(q => q.TimeJoined)
                 .FirstOrDefaultAsync();
 
+            // IF an opponent is found:
             if (waitingPlayer != null)
             {
-                // Randomly assign white and black pieces
+                // Use a random number generator to pick who plays White or Black
                 var rnd = new Random();
                 string whitePlayerId, blackPlayerId;
                 if (rnd.Next(2) == 0)
@@ -135,7 +138,7 @@ namespace chessPairingSystem.Controllers
                     blackPlayerId = currentUser.Id;
                 }
 
-                // Create the match record
+                // Create a new Match row with the details
                 var match = new Match
                 {
                     WhitePlayerId = whitePlayerId,
@@ -148,17 +151,19 @@ namespace chessPairingSystem.Controllers
 
                 _context.Match.Add(match);
 
-                // Remove the waiting player from the queue
+                // Remove the opponent from the queue table because they are now playing a game
                 _context.MatchQueue.Remove(waitingPlayer);
 
+                // Save all changes to the database
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = $"You have been paired! Head to {location} at {scheduledTime}.";
                 return RedirectToAction("Index", "Matches");
             }
+            // IF no one is waiting:
             else
             {
-                // No waiting player found - add current player to queue
+                // Create a new queue entry to put the current player on hold
                 var queueEntry = new MatchQueue
                 {
                     PlayerId = currentUser.Id,
@@ -176,18 +181,18 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: MatchQueues/MyQueue
-        // Shows the current player their queue status
+        // Shows the player their current waiting status
         [Authorize(Roles = "Player")]
         public async Task<IActionResult> MyQueue()
         {
             var currentUser = await _userManager.GetUserAsync(User);
 
-            // LINQ - Find this player's queue entry if it exists
+            // Find the player's queue record in the database
             var queueEntry = await _context.MatchQueue
                 .Include(q => q.Player)
                 .FirstOrDefaultAsync(q => q.PlayerId == currentUser.Id);
 
-            // If no longer in queue, check if they got paired and redirect to matches
+ 
             if (queueEntry == null)
             {
                 var activeMatch = await _context.Match
@@ -195,6 +200,7 @@ namespace chessPairingSystem.Controllers
                         (m.WhitePlayerId == currentUser.Id || m.BlackPlayerId == currentUser.Id)
                         && m.Status == "Pending");
 
+                // If a new match is found, automatically send them to their match list page
                 if (activeMatch)
                 {
                     TempData["Success"] = "You have been paired! Your match is ready.";
@@ -206,7 +212,7 @@ namespace chessPairingSystem.Controllers
         }
 
         // POST: MatchQueues/LeaveQueue
-        // Allows a player to remove themselves from the queue
+        // Deletes the player from the queue if they click the "Leave Queue" button
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Player")]
@@ -214,10 +220,10 @@ namespace chessPairingSystem.Controllers
         {
             var currentUser = await _userManager.GetUserAsync(User);
 
-            // LINQ - Find and remove the player's queue entry
             var queueEntry = await _context.MatchQueue
                 .FirstOrDefaultAsync(q => q.PlayerId == currentUser.Id);
 
+            // Remove them from the database so other players don't match with someone who left
             if (queueEntry != null)
             {
                 _context.MatchQueue.Remove(queueEntry);
@@ -228,7 +234,8 @@ namespace chessPairingSystem.Controllers
             return RedirectToAction("JoinQueue");
         }
 
-        // GET: MatchQueues/Details/5 - Admin only
+        // GET: MatchQueues/Details/5
+        // Admin action to see full details of a specific queue entry
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Details(int? id)
         {
@@ -243,7 +250,8 @@ namespace chessPairingSystem.Controllers
             return View(matchQueue);
         }
 
-        // GET: MatchQueues/Delete/5 - Admin only
+        // GET: MatchQueues/Delete/5
+        // Admin page to confirm deleting someone from the queue manually
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -258,6 +266,8 @@ namespace chessPairingSystem.Controllers
             return View(matchQueue);
         }
 
+        // POST: MatchQueues/Delete/5
+        // Runs the deletion when the Admin confirms the remove command
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -273,6 +283,7 @@ namespace chessPairingSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // Helper check to see if a queue item exists by its ID number
         private bool MatchQueueExists(int id)
         {
             return _context.MatchQueue.Any(e => e.QueueId == id);
