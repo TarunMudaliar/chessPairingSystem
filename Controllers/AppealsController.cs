@@ -64,6 +64,28 @@ namespace chessPairingSystem.Controllers
                                      .ToListAsync());
         }
 
+        // GET: Appeals/Details/5
+        // Loads the details page for a specific appeal record
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var appeal = await _context.Appeal
+                .Include(a => a.Match)
+                .Include(a => a.Player)
+                .FirstOrDefaultAsync(m => m.AppealId == id);
+
+            if (appeal == null)
+            {
+                return NotFound();
+            }
+
+            return View(appeal);
+        }
+
         // GET: Appeals/Create
         // Loads the blank form page so a student can type out a new appeal
         public IActionResult Create()
@@ -77,7 +99,7 @@ namespace chessPairingSystem.Controllers
         // POST: Appeals/Create
         // Saves the submitted form data into the database when the student clicks submit
         [HttpPost]
-        [ValidateAntiForgeryToken] // Security tag that stops hackers from submitting fake forms from outside the site
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AppealId,GameId,Message")] Appeal appeal)
         {
             // Automatically attach the logged-in student's ID on the server side so they can't pretend to be someone else
@@ -98,7 +120,7 @@ namespace chessPairingSystem.Controllers
                 _context.Add(appeal);
                 await _context.SaveChangesAsync();
 
-                // Send the student back to their personal list to see their submitted ticket
+                // Send the student back to their personal list to see their submitted appeal
                 return RedirectToAction(nameof(MyAppeals));
             }
 
@@ -163,7 +185,45 @@ namespace chessPairingSystem.Controllers
             return View(appeal);
         }
 
-        //  A quick check to see if a specific appeal ID actually exists in the database
+        // GET: Appeals/Delete/5
+        // Loads a confirmation page before permanently deleting an appeal record
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var appeal = await _context.Appeal
+                .Include(a => a.Match)
+                .Include(a => a.Player)
+                .FirstOrDefaultAsync(m => m.AppealId == id);
+
+            if (appeal == null)
+            {
+                return NotFound();
+            }
+
+            return View(appeal);
+        }
+
+        // POST: Appeals/Delete/5
+        // Deletes the appeal from the database once confirmation is submitted
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var appeal = await _context.Appeal.FindAsync(id);
+            if (appeal != null)
+            {
+                _context.Appeal.Remove(appeal);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        //  Check to see if a specific appeal ID actually exists in the database
         private bool AppealExists(int id)
         {
             return _context.Appeal.Any(e => e.AppealId == id);
