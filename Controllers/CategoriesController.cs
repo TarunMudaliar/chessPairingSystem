@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using chessPairingSystem.Areas.Identity.Data;
 using chessPairingSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace chessPairingSystem.Controllers
 {
@@ -14,14 +15,17 @@ namespace chessPairingSystem.Controllers
     {
         private readonly chessPairingSystemContext _context;
 
+        // Constructor: Connects the database to this controller to fetch year levels
         public CategoriesController(chessPairingSystemContext context)
         {
             _context = context;
         }
 
         // GET: Categories
+        // Fetches and displays the full list of school year levels (e.g., Year 9 to Year 13)
         public async Task<IActionResult> Index()
         {
+            // Pulls the categories out of the database and passes them to the webpage view
             return View(await _context.Category.ToListAsync());
         }
 
@@ -44,16 +48,16 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: Categories/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Categories/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("CategoryId,CategoryName")] Category category)
         {
             if (ModelState.IsValid)
@@ -66,6 +70,7 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: Categories/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -82,10 +87,9 @@ namespace chessPairingSystem.Controllers
         }
 
         // POST: Categories/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("CategoryId,CategoryName")] Category category)
         {
             if (id != category.CategoryId)
@@ -117,6 +121,7 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: Categories/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -137,6 +142,7 @@ namespace chessPairingSystem.Controllers
         // POST: Categories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var category = await _context.Category.FindAsync(id);

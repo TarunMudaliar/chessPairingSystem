@@ -17,6 +17,7 @@ namespace chessPairingSystem.Controllers
         private readonly chessPairingSystemContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
+        // Constructor: Connects the database and the UserManager<ApplicationUser> to this controller
         public MatchesController(chessPairingSystemContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
@@ -24,17 +25,18 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: Matches
-        // Admin sees all matches, Players only see their own
+        // Displays webpage listing chess games, filtered based on account roles
         [Authorize]
         public async Task<IActionResult> Index(string searchString)
         {
+            // Gets the unique profile of the logged-in user
             var currentUser = await _userManager.GetUserAsync(User);
 
-            // LINQ - Get all matches from database
+            // Set up a query to fetch data from the Match table
             var matches = from m in _context.Match
                           select m;
 
-            // LINQ - Players can only see their own matches
+            // filters the list so students can only look at games they played in
             if (User.IsInRole("Player"))
             {
                 matches = matches.Where(m =>
@@ -42,7 +44,7 @@ namespace chessPairingSystem.Controllers
                     m.BlackPlayerId == currentUser.Id);
             }
 
-            // LINQ - Filter matches by player username if search string is provided
+            // Filters the games list if a student username is typed into the search box
             if (!String.IsNullOrEmpty(searchString))
             {
                 matches = matches.Where(m =>
@@ -50,7 +52,7 @@ namespace chessPairingSystem.Controllers
                     m.BlackPlayer.UserName.Contains(searchString));
             }
 
-            // LINQ - Include related player data, order by most recent first
+            // Links student profiles to the matches and sorts them by date to display the list
             return View(await matches.Include(m => m.WhitePlayer)
                                      .Include(m => m.BlackPlayer)
                                      .OrderByDescending(m => m.MatchDate)
@@ -70,7 +72,6 @@ namespace chessPairingSystem.Controllers
 
             if (match == null) return NotFound();
 
-            // Players can only view their own matches
             if (User.IsInRole("Player"))
             {
                 var currentUser = await _userManager.GetUserAsync(User);
@@ -82,7 +83,7 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: Matches/SubmitResult/5
-        // Shows the result submission form for a player
+        // Loads the score submission screen for the game
         [Authorize(Roles = "Player")]
         public async Task<IActionResult> SubmitResult(int? id)
         {
@@ -97,21 +98,21 @@ namespace chessPairingSystem.Controllers
 
             if (match == null) return NotFound();
 
-            // Make sure this player is actually in this match
+            // Stops outside accounts from submitting results for someone else's game
             if (match.WhitePlayerId != currentUser.Id && match.BlackPlayerId != currentUser.Id)
             {
                 TempData["Error"] = "You are not a player in this match.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // Make sure the match is still pending
+            // Ensures completed or disputed matches cannot have scores updated again
             if (match.Status != "Pending")
             {
                 TempData["Error"] = "This match has already been completed or disputed.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // Check if this player has already submitted a result
+            // Prevents a player from resubmitting a score if they have already sent one in
             bool isWhitePlayer = match.WhitePlayerId == currentUser.Id;
             if (isWhitePlayer && match.WhiteResult != null)
             {
@@ -128,7 +129,7 @@ namespace chessPairingSystem.Controllers
         }
 
         // POST: Matches/SubmitResult/5
-        // Core result submission - handles completion, disputes and ELO update
+        // Processes student scores, checks for cheating or mistakes, and calculates updated rankings
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Player")]
@@ -136,7 +137,7 @@ namespace chessPairingSystem.Controllers
         {
             var currentUser = await _userManager.GetUserAsync(User);
 
-            // Validate result value
+            // Ensures input text matches valid score options
             if (result != "W" && result != "L" && result != "D")
             {
                 TempData["Error"] = "Invalid result. Please select Win, Loss or Draw.";
@@ -150,14 +151,12 @@ namespace chessPairingSystem.Controllers
 
             if (match == null) return NotFound();
 
-            // Make sure this player is in this match
             if (match.WhitePlayerId != currentUser.Id && match.BlackPlayerId != currentUser.Id)
             {
                 TempData["Error"] = "You are not a player in this match.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // Make sure match is still pending
             if (match.Status != "Pending")
             {
                 TempData["Error"] = "This match is no longer pending.";
@@ -166,7 +165,7 @@ namespace chessPairingSystem.Controllers
 
             bool isWhitePlayer = match.WhitePlayerId == currentUser.Id;
 
-            // Store this player's result
+            // Save the typed score into the correct player slot in the database record
             if (isWhitePlayer)
             {
                 if (match.WhiteResult != null)
@@ -186,10 +185,10 @@ namespace chessPairingSystem.Controllers
                 match.BlackResult = result;
             }
 
-            // Check if both players have now submitted
+            // Checks outcomes if both players have submitted their scores
             if (match.WhiteResult != null && match.BlackResult != null)
             {
-                // Check if results are consistent
+                // Verify that both score submissions match up
                 bool resultsMatch =
                     (match.WhiteResult == "W" && match.BlackResult == "L") ||
                     (match.WhiteResult == "L" && match.BlackResult == "W") ||
@@ -197,14 +196,14 @@ namespace chessPairingSystem.Controllers
 
                 if (resultsMatch)
                 {
-                    // Results agree - complete match and update ratings
+                    // Closes the game record and runs the ELO calculation formula
                     match.Status = "Completed";
                     await UpdateRatings(match);
                     TempData["Success"] = "Match completed! Ratings have been updated.";
                 }
                 else
                 {
-                    // Results conflict - mark disputed and auto-create appeal
+                    // Flags the game record and generates an appeal automatically
                     match.Status = "Disputed";
 
                     var appeal = new Appeal
@@ -222,7 +221,7 @@ namespace chessPairingSystem.Controllers
             }
             else
             {
-                // Only one player submitted so far
+                // Keeps the game open if the opponent has not sent a score yet
                 TempData["Success"] = "Result submitted. Waiting for your opponent to submit their result.";
             }
 
@@ -232,8 +231,8 @@ namespace chessPairingSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ELO Rating Calculation
-        // Updates both players ratings based on match result
+        // Elo Rating Calculation Method
+        // Updates student rating mathematically when a match finishes
         private async Task UpdateRatings(Match match)
         {
             var whitePlayer = await _userManager.FindByIdAsync(match.WhitePlayerId);
@@ -241,19 +240,19 @@ namespace chessPairingSystem.Controllers
 
             if (whitePlayer == null || blackPlayer == null) return;
 
-            int kFactor = 32;
+            int kFactor = 32; // Maximum rating that can shift in a single game
 
-            // Calculate expected scores using ELO formula
+            // Standard Elo formula calculation based on current rating to find expected outcomes
             double expectedWhite = 1.0 / (1.0 + Math.Pow(10, (blackPlayer.Ratings - whitePlayer.Ratings) / 400.0));
             double expectedBlack = 1.0 - expectedWhite;
 
-            // Actual scores based on result
+            // Assign numerical values to outcome states
             double actualWhite, actualBlack;
             if (match.WhiteResult == "W") { actualWhite = 1; actualBlack = 0; }
             else if (match.WhiteResult == "L") { actualWhite = 0; actualBlack = 1; }
             else { actualWhite = 0.5; actualBlack = 0.5; }
 
-            // Calculate and clamp new ratings between 0 and 3000
+            // Adjust ratings and confirm values
             whitePlayer.Ratings = Math.Clamp(
                 (int)(whitePlayer.Ratings + kFactor * (actualWhite - expectedWhite)), 0, 3000);
             blackPlayer.Ratings = Math.Clamp(
@@ -263,7 +262,7 @@ namespace chessPairingSystem.Controllers
             await _userManager.UpdateAsync(blackPlayer);
         }
 
-        // GET: Matches/Create - Admin only
+        // GET: Matches/Create
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
@@ -272,13 +271,12 @@ namespace chessPairingSystem.Controllers
             return View();
         }
 
-        // POST: Matches/Create - Admin only
+        // POST: Matches/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("GameId,WhitePlayerId,BlackPlayerId,WhiteResult,BlackResult,Status,MatchDate,Location,ScheduledTime")] Match match)
         {
-            // Validation - prevent same player being selected for both sides
             if (match.WhitePlayerId == match.BlackPlayerId)
                 ModelState.AddModelError(string.Empty, "White Player and Black Player cannot be the same player.");
 
@@ -293,7 +291,7 @@ namespace chessPairingSystem.Controllers
             return View(match);
         }
 
-        // GET: Matches/Edit/5 - Admin only
+        // GET: Matches/Edit/5
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -307,7 +305,7 @@ namespace chessPairingSystem.Controllers
             return View(match);
         }
 
-        // POST: Matches/Edit/5 - Admin only
+        // POST: Matches/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -315,7 +313,6 @@ namespace chessPairingSystem.Controllers
         {
             if (id != match.GameId) return NotFound();
 
-            // Validation - prevent same player being selected for both sides
             if (match.WhitePlayerId == match.BlackPlayerId)
                 ModelState.AddModelError(string.Empty, "White Player and Black Player cannot be the same player.");
 
@@ -338,7 +335,7 @@ namespace chessPairingSystem.Controllers
             return View(match);
         }
 
-        // GET: Matches/Delete/5 - Admin only
+        // GET: Matches/Delete/5
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -353,7 +350,7 @@ namespace chessPairingSystem.Controllers
             return View(match);
         }
 
-        // POST: Matches/Delete/5 - Admin only
+        // POST: Matches/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]

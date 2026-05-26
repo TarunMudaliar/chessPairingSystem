@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using chessPairingSystem.Areas.Identity.Data;
 using chessPairingSystem.Models;
-using System.Security.Claims; // Required to extract the logged-in User's ID
+using System.Security.Claims;
 
 namespace chessPairingSystem.Controllers
 {
@@ -15,104 +15,90 @@ namespace chessPairingSystem.Controllers
     {
         private readonly chessPairingSystemContext _context;
 
+        // Constructor: Connects the database to this controller so it can be used
         public AppealsController(chessPairingSystemContext context)
         {
             _context = context;
         }
 
         // GET: Appeals/MyAppeals
-        // Fetches appeals filed only by the currently logged-in player
+        // Displays a webpage showing only the appeals filed by the logged-in student
         public async Task<IActionResult> MyAppeals()
         {
-            // 1. Get the unique User ID of the currently logged-in player
+            // Gets the unique ID of the user who is currently logged in
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            // If they aren't logged in, send them to the login screen
             if (userId == null)
             {
-                return Challenge(); // Forces them to log in if their session expired
+                return Challenge();
             }
 
-            // 2. Query the database, filtering appeals where PlayerId matches the current user
+            // Look at the Appeals table and find records where the PlayerId matches this user
+            // link the Match and Player tables to display real names and dates on the screen
             var playerAppeals = _context.Appeal
                 .Where(a => a.PlayerId == userId)
                 .Include(a => a.Match)
                 .Include(a => a.Player);
 
-            // 3. Send the filtered list to the view
             return View(await playerAppeals.ToListAsync());
         }
 
         // GET: Appeals
-        // LINQ - Search appeals by status (Admin view)
+        // Admin View: Shows the teacher/admin a list of all complaints, with a search bar to filter by status
         public async Task<IActionResult> Index(string searchString)
         {
-            // LINQ - Get all appeals from database
+            // Start by getting everything in the Appeal table
             var appeals = from a in _context.Appeal
                           select a;
 
-            // LINQ - Filter appeals by status if search string is provided
+            // Filter the list by the appeal typed in the search bar (e.g. "Pending", "Resolved", "Rejected")
             if (!String.IsNullOrEmpty(searchString))
             {
                 appeals = appeals.Where(a => a.Status.Contains(searchString));
             }
 
-            // LINQ - Include related match and player data and return to view
+            // Run the query and link the player and match details before loading the webpage
             return View(await appeals.Include(a => a.Match)
                                      .Include(a => a.Player)
                                      .ToListAsync());
         }
 
-        // GET: Appeals/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var appeal = await _context.Appeal
-                .Include(a => a.Match)
-                .Include(a => a.Player)
-                .FirstOrDefaultAsync(m => m.AppealId == id);
-            if (appeal == null)
-            {
-                return NotFound();
-            }
-
-            return View(appeal);
-        }
-
         // GET: Appeals/Create
+        // Loads the blank form page so a student can type out a new appeal
         public IActionResult Create()
         {
+            // Create drop-down menus for the form using existing Game IDs and Usernames from the database
             ViewData["GameId"] = new SelectList(_context.Match, "GameId", "GameId");
             ViewData["PlayerId"] = new SelectList(_context.Users, "Id", "UserName");
             return View();
         }
 
         // POST: Appeals/Create
+        // Saves the submitted form data into the database when the student clicks submit
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken] // Security tag that stops hackers from submitting fake forms from outside the site
         public async Task<IActionResult> Create([Bind("AppealId,GameId,Message")] Appeal appeal)
         {
-            // 1. Automatically attach the logged-in Player's ID to prevent identity spoofing
+            // Automatically attach the logged-in student's ID on the server side so they can't pretend to be someone else
             appeal.PlayerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // 2. Force default values on the server side for safety and automation
+            // Set the default startup values for a brand new appeal
             appeal.Status = "Pending";
             appeal.SubmittedAt = DateTime.Now;
             appeal.AdminResponse = "";
 
-            // Clear manual injection properties out of validation states
+            // Tell the form checker to ignore fields that the server is filling out automatically
             ModelState.Remove("PlayerId");
             ModelState.Remove("Status");
 
+            // If the form was filled out correctly, save it to the database
             if (ModelState.IsValid)
             {
                 _context.Add(appeal);
                 await _context.SaveChangesAsync();
 
-                // 3. Redirect back to the player's dashboard layout
+                // Send the student back to their personal list to see their submitted ticket
                 return RedirectToAction(nameof(MyAppeals));
             }
 
@@ -121,6 +107,7 @@ namespace chessPairingSystem.Controllers
         }
 
         // GET: Appeals/Edit/5
+        // Loads the edit form page so the teacher/admin can view a appeal and type a reply
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -139,10 +126,12 @@ namespace chessPairingSystem.Controllers
         }
 
         // POST: Appeals/Edit/5
+        // Saves the reply and the status updates made by the teacher
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("AppealId,GameId,PlayerId,Message,Status,SubmittedAt,AdminResponse")] Appeal appeal)
         {
+            //  Makes sure the ID in the URL matches the ID of the appeal being saved
             if (id != appeal.AppealId)
             {
                 return NotFound();
@@ -157,6 +146,7 @@ namespace chessPairingSystem.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
+                    // Checks if the appeal was deleted by someone else while you were editing it
                     if (!AppealExists(appeal.AppealId))
                     {
                         return NotFound();
@@ -173,41 +163,7 @@ namespace chessPairingSystem.Controllers
             return View(appeal);
         }
 
-        // GET: Appeals/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var appeal = await _context.Appeal
-                .Include(a => a.Match)
-                .Include(a => a.Player)
-                .FirstOrDefaultAsync(m => m.AppealId == id);
-            if (appeal == null)
-            {
-                return NotFound();
-            }
-
-            return View(appeal);
-        }
-
-        // POST: Appeals/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var appeal = await _context.Appeal.FindAsync(id);
-            if (appeal != null)
-            {
-                _context.Appeal.Remove(appeal);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
+        //  A quick check to see if a specific appeal ID actually exists in the database
         private bool AppealExists(int id)
         {
             return _context.Appeal.Any(e => e.AppealId == id);
