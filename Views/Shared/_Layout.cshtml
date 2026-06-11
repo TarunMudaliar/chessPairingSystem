@@ -3,76 +3,79 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - chessPairingSystem</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Avondale College Chess</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/chessPairingSystem.styles.css" asp-append-version="true" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+            .font-komika {
+                font-family: 'Komika Hand', 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+                font-weight: bold;
+            }
+
+            .custom-nav-link {
+                color: rgba(255, 255, 255, 0.7) !important;
+                transition: all 0.2s ease-in-out;
+                display: inline-block;
+            }
+
+                .custom-nav-link:hover, .navbar-brand:hover {
+                    color: #ffffff !important;
+                    transform: scale(1.05);
+                }
+    </style>
 </head>
-<body>
+<body class="bg-dark">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Avondale College Chess</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-black p-3" style="background-color: #000000 !important;">
+            <div class="container-fluid px-4">
+
+                <a class="navbar-brand text-white font-komika" asp-area="" asp-controller="Home" asp-action="Index" style="text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s;">
+                    Avondale College Chess
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Standings">Standings</a>
-                        </li>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Home" asp-action="Standings">Standings</a></li>
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Categories" asp-action="Index">Categories</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Matches" asp-action="Index">Matches</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="MatchQueues" asp-action="Index">Queue</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Appeals" asp-action="Index">Appeals</a>
-                            </li>
+                            <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Categories" asp-action="Index">Categories</a></li>
+                            <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Matches" asp-action="Index">Matches</a></li>
+                            <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="MatchQueues" asp-action="Index">Queue</a></li>
+                            <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Appeals" asp-action="Index">Appeals</a></li>
                         }
 
                         @if (User.IsInRole("Player"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Matches" asp-action="Index">My Matches</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="MatchQueues" asp-action="JoinQueue">Join Queue</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Appeals" asp-action="MyAppeals">My Appeals</a>
-                            </li>
+                            <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Matches" asp-action="Index">My Matches</a></li>
+                            <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="MatchQueues" asp-action="JoinQueue">Join Queue</a></li>
+                            <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Appeals" asp-action="MyAppeals">My Appeals</a></li>
                         }
                     </ul>
-                    <partial name="_LoginPartial" />
+
+                    <div class="d-flex align-items-center">
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Avondale College Chess - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    <main role="main">
+        @RenderBody()
+    </main>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
