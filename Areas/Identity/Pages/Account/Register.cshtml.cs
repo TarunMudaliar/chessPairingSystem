@@ -58,7 +58,16 @@ namespace chessPairingSystem.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            //  integer getting the  year level (9, 10, 11, 12, 13)
+            [Required(ErrorMessage = "First name is required.")]
+            [Display(Name = "First Name")]
+            [StringLength(50)]
+            public string FirstName { get; set; }
+
+            [Required(ErrorMessage = "Last name is required.")]
+            [Display(Name = "Last Name")]
+            [StringLength(50)]
+            public string LastName { get; set; }
+
             [Required(ErrorMessage = "Please select your year level.")]
             [Display(Name = "Year Level")]
             public int SelectedYearLevel { get; set; }
@@ -97,9 +106,9 @@ namespace chessPairingSystem.Areas.Identity.Pages.Account
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 
-                // Directly map the value to the user model properties
+
+                user.PlayerName = $"{Input.FirstName} {Input.LastName}";
                 user.CategoryId = Input.SelectedYearLevel;
-                user.PlayerName = Input.Email.Split('@')[0];
                 user.Ratings = 1200;
 
                 var result = await _userManager.CreateAsync(user, Input.Password);

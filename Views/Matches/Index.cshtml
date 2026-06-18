@@ -38,7 +38,6 @@
         <a asp-action="Index" class="btn btn-secondary">Clear</a>
     </div>
 </form>
-
 <br />
 
 <table class="table">
@@ -59,10 +58,13 @@
         @foreach (var item in Model)
         {
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.WhitePlayer.UserName)</td>
-                <td>@Html.DisplayFor(modelItem => item.BlackPlayer.UserName)</td>
+                <td>@(string.IsNullOrWhiteSpace(item.WhitePlayer?.PlayerName) ? item.WhitePlayer?.UserName : item.WhitePlayer.PlayerName)</td>
+
+                <td>@(string.IsNullOrWhiteSpace(item.BlackPlayer?.PlayerName) ? item.BlackPlayer?.UserName : item.BlackPlayer.PlayerName)</td>
+
                 <td>@Html.DisplayFor(modelItem => item.WhiteResult)</td>
                 <td>@Html.DisplayFor(modelItem => item.BlackResult)</td>
+
                 <td>
                     @if (item.Status == "Completed")
                     {
@@ -77,9 +79,11 @@
                         <span class="badge bg-warning text-dark">Pending</span>
                     }
                 </td>
+
                 <td>@Html.DisplayFor(modelItem => item.MatchDate)</td>
                 <td>@Html.DisplayFor(modelItem => item.Location)</td>
                 <td>@Html.DisplayFor(modelItem => item.ScheduledTime)</td>
+
                 <td>
                     @if (item.Status == "Pending" && User.IsInRole("Player"))
                     {

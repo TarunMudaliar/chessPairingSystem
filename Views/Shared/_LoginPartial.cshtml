@@ -7,9 +7,13 @@
 <ul class="navbar-nav align-items-center">
     @if (SignInManager.IsSignedIn(User))
     {
+        // Pull the database profile details for the currently active user
+        var currentUser = await UserManager.GetUserAsync(User);
+        var displayName = !string.IsNullOrWhiteSpace(currentUser?.PlayerName) ? currentUser.PlayerName : UserManager.GetUserName(User);
+
         <li class="nav-item px-2">
             <a id="manage" class="nav-link fw-bold custom-nav-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
-                Hello @UserManager.GetUserName(User)!
+                Hello @displayName!
             </a>
         </li>
         <li class="nav-item px-2">
