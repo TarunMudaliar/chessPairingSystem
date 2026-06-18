@@ -1,35 +1,87 @@
-﻿@model IEnumerable<chessPairingSystem.Models.Category>
+﻿@model IEnumerable<chessPairingSystem.Areas.Identity.Data.ApplicationUser>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Player Management";
 }
 
-<h1>Categories</h1>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold text-white font-komika text-uppercase mb-1" style="letter-spacing: 1px;">Player Directory</h1>
+            <p class="text-muted small mb-0">Total Enrolled Competitors: <span class="text-primary fw-bold">@Model.Count()</span></p>
+        </div>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.CategoryName)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.CategoryName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CategoryId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CategoryId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CategoryId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <div class="card bg-dark border border-secondary shadow-lg rounded-3 overflow-hidden" style="background-color: #1e1e1e !important; border-color: #2d2d2d !important;">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0" style="background-color: #1e1e1e !important;">
+                <thead>
+                    <tr class="text-muted text-uppercase small border-secondary" style="border-bottom-width: 2px;">
+                        <th class="ps-4 py-3">Player Details</th>
+                        <th class="py-3">Year Level</th>
+                        <th class="py-3">Current Rating</th>
+                        <th class="text-end pe-4 py-3">Management Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var player in Model)
+                    {
+                        <tr class="border-secondary">
+                            <td class="ps-4 py-3">
+                                <div class="fw-bold text-white">@(player.PlayerName ?? "Unnamed Player")</div>
+                                <div class="text-muted small">@player.Email</div>
+                            </td>
+
+                            <td class="py-3">
+                                @if (player.CategoryId == 1)
+                                {
+                                    <span class="badge bg-secondary px-2 py-1">Year 9</span>
+                                }
+                                else if (player.CategoryId == 2)
+                                {
+
+                                    <span class="badge bg-secondary px-2 py-1">Year 10</span>
+                                }
+                                else if (player.CategoryId == 3)
+                                {
+
+                                    <span class="badge bg-secondary px-2 py-1">Year 11</span>
+                                }
+                                else if (player.CategoryId == 4)
+                                {
+
+                                    <span class="badge bg-secondary px-2 py-1">Year 12</span>
+                                }
+                                else if (player.CategoryId == 5)
+                                {
+
+                                    <span class="badge bg-secondary px-2 py-1">Year 13</span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-danger small">Unassigned</span>
+                                }
+                            </td>
+
+                            <td class="py-3">
+                                <span class="font-monospace text-info fw-bold">@player.Ratings</span>
+                            </td>
+
+                            <td class="text-end pe-4 py-3">
+                                <div class="d-inline-flex gap-2">
+                                    <a asp-action="Edit" asp-route-id="@player.Id" class="btn btn-sm btn-outline-primary px-3">
+                                        Edit
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@player.Id" class="btn btn-sm btn-outline-danger px-3" onclick="return confirm('Are you sure you want to remove this player from the system?');">
+                                        Remove
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

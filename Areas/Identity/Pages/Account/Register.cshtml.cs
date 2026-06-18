@@ -30,7 +30,7 @@ namespace chessPairingSystem.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-        private readonly RoleManager<IdentityRole> _roleManager; 
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
@@ -58,6 +58,11 @@ namespace chessPairingSystem.Areas.Identity.Pages.Account
 
         public class InputModel
         {
+            //  integer getting the  year level (9, 10, 11, 12, 13)
+            [Required(ErrorMessage = "Please select your year level.")]
+            [Display(Name = "Year Level")]
+            public int SelectedYearLevel { get; set; }
+
             [Required]
             [EmailAddress]
             [Display(Name = "Email")]
@@ -91,13 +96,18 @@ namespace chessPairingSystem.Areas.Identity.Pages.Account
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
+                // Directly map the value to the user model properties
+                user.CategoryId = Input.SelectedYearLevel;
+                user.PlayerName = Input.Email.Split('@')[0];
+                user.Ratings = 1200;
+
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    // Assign Player role to all newly registered users
                     await _userManager.AddToRoleAsync(user, "Player");
 
                     var userId = await _userManager.GetUserIdAsync(user);

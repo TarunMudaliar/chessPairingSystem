@@ -1,34 +1,56 @@
-﻿@model chessPairingSystem.Models.Category
+﻿@model chessPairingSystem.Areas.Identity.Data.ApplicationUser
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Player";
 }
 
-<h1>Edit</h1>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5">
 
-<h4>Category</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="CategoryId" />
-            <div class="form-group">
-                <label asp-for="CategoryName" class="control-label"></label>
-                <input asp-for="CategoryName" class="form-control" />
-                <span asp-validation-for="CategoryName" class="text-danger"></span>
+            <div class="card p-4 p-sm-5 shadow-lg rounded-3" style="background-color: #1e1e1e !important; border: 1px solid #2d2d2d !important;">
+
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-white font-komika text-uppercase" style="letter-spacing: 1px;">Edit Player</h2>
+                    <p class="text-muted small">Modifying account profile for @Model.Email</p>
+                </div>
+
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3" role="alert"></div>
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="form-group mb-3">
+                        <label asp-for="PlayerName" class="form-label fw-bold text-light small mb-2">Player Name</label>
+                        <input asp-for="PlayerName" class="form-control" placeholder="Display Name" style="height: 3rem;" />
+                        <span asp-validation-for="PlayerName" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="CategoryId" class="form-label fw-bold text-light small mb-2">Division (Year Level)</label>
+                        <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryDropdown" style="height: 3rem;">
+                            <option value="">-- Unassigned --</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="Ratings" class="form-label fw-bold text-light small mb-2">Chess Rating</label>
+                        <input asp-for="Ratings" type="number" class="form-control" style="height: 3rem;" />
+                        <span asp-validation-for="Ratings" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary w-50 fw-bold py-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary w-50 fw-bold py-2" style="background-color: #0d6efd; border: none;">Save Changes</button>
+                    </div>
+                </form>
+
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

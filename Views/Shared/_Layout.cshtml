@@ -18,6 +18,7 @@
                 font-weight: bold;
             }
 
+            /* --- NAVIGATION LINKS --- */
             .custom-nav-link {
                 color: rgba(255, 255, 255, 0.7) !important;
                 transition: all 0.2s ease-in-out;
@@ -28,9 +29,29 @@
                     color: #ffffff !important;
                     transform: scale(1.05);
                 }
+
+            .form-control {
+                background-color: #111111 !important;
+                border: 1px solid #2d2d2d !important;
+                color: #ffffff !important;
+            }
+
+                .form-control:focus {
+                    background-color: #000000 !important;
+                    border-color: #0d6efd !important;
+                    color: #ffffff !important;
+                    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+                }
+            label, .form-label {
+                color: #adb5bd !important;
+            }
+
+            .text-muted {
+                color: #888888 !important;
+            }
     </style>
 </head>
-<body class="bg-dark">
+<body style="background-color: #000000 !important;">
     <header>
         <nav class="navbar navbar-expand-sm navbar-dark bg-black p-3" style="background-color: #000000 !important;">
             <div class="container-fluid px-4">
@@ -50,7 +71,7 @@
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Categories" asp-action="Index">Categories</a></li>
+                            <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Categories" asp-action="Index">Players</a></li>
                             <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Matches" asp-action="Index">Matches</a></li>
                             <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="MatchQueues" asp-action="Index">Queue</a></li>
                             <li class="nav-item px-2"><a class="nav-link fw-bold custom-nav-link" asp-area="" asp-controller="Appeals" asp-action="Index">Appeals</a></li>
